@@ -1,139 +1,22 @@
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-.python-version
-
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-virtualenv/
-
-# Environment variables and secrets
-.env
-.env.*
-!.env.example
-!.env.sample
-
-# Django
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Django generated files
-media/
 staticfiles/
-# Keep source static files in version control
-# Do not ignore static/
+media/
 
-# Uploaded files and user data
-uploads/
+.env
+.env.[a-zA-Z]*
+!.env.example
 
-# PostgreSQL and database backups
-*.sql
-*.dump
-*.backup
-*.sqlite3
-
-# Migrations
-# Keep Django migrations in Git
-# Do not ignore migrations/
-
-# Testing and coverage
+__pycache__/
+*.py[cod]
+*$py.class
 .pytest_cache/
 .coverage
-.coverage.*
 htmlcov/
-coverage.xml
-nosetests.xml
-.tox/
-.nox/
-.hypothesis/
-test-results/
-junit.xml
-
-# Type checking and linting
-.mypy_cache/
-.pyre/
-.pytype/
-.ruff_cache/
-.dmypy.json
-dmypy.json
-
-# Jupyter Notebook
-.ipynb_checkpoints/
-
-# Build and distribution
-build/
-dist/
-wheels/
-*.egg
-*.egg-info/
-.eggs/
-pip-wheel-metadata/
-
-# Documentation builds
-docs/_build/
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# Redis dumps
-dump.rdb
-appendonly.aof
-
-# Docker overrides and local secrets
-.env.docker
-docker-compose.override.yml
-
-# IDEs and editors
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.project
-.pydevproject
-.settings/
-
-# Operating system files
 .DS_Store
 Thumbs.db
-Desktop.ini
 
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.bak
-*.orig
-*.rej
-
-# Certificates and private keys
-*.pem
-*.key
-*.p12
-*.pfx
-*.crt
-*.cer
-
-# Local development and debug files
-debug.log
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Deployment and infrastructure secrets
-terraform.tfstate
-terraform.tfstate.*
-crash.log
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
+.venv
