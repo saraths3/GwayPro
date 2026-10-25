@@ -1,0 +1,31 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GwayPro - Login</title>
+    <link rel="stylesheet" href="{% static 'account/login.css' %}">
+</head>
+<body>
+    <main>
+        
+        <h1>
+            Login to GwayPro
+        </h1>
+        <form action="{% provider_login_url 'google' %}" method="post">
+            {% csrf_token %}
+            <button>
+                Login with GOOGLE
+            </button>
+        </form>
+        <form action="{% provider_login_url 'github' %}" method="post">
+            {% csrf_token %}
+            <button>
+                Login with GITHUB
+            </button>
+        </form>
+    </main>
+</body>
+</html>
