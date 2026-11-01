@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
+
+:root {
+  --bg-dark: #1d2021;
+  --surface-dark: #282828;
+  --surface-hover: #32302f;
+  --border-color: #3c3836;
+  --text-primary: #ebdbb2;
+  --text-muted: #928374;
+  --text-bright: #fbf1c7;
+  --accent-orange: #fe8019;
+  --accent-red: #fb4934;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+.cway-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* Top Command Bar */
+.cway-navbar {
+  height: 68px;
+  background-color: var(--surface-dark);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-left, .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  text-decoration: none;
+}
+
+.brand-logo .material-symbols-outlined {
+  color: var(--accent-orange);
+  font-size: 1.35rem;
+}
+
+.nav-center {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.nav-link .material-symbols-outlined {
+  font-size: 1.125rem;
+}
+
+.nav-link:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-bright);
+}
+
+.nav-link.active {
+  background-color: rgba(254, 128, 25, 0.1);
+  color: var(--accent-orange);
+  border: 1px solid rgba(254, 128, 25, 0.2);
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+}
+
+.user-pill .material-symbols-outlined {
+  font-size: 1.125rem;
+  color: var(--accent-orange);
+}
+
+.btn-icon-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(251, 73, 52, 0.08);
+  border: 1px solid rgba(251, 73, 52, 0.2);
+  border-radius: 6px;
+  color: var(--accent-red);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btn-icon-logout:hover {
+  background: var(--accent-red);
+  color: var(--bg-dark);
+}
+
+/* Workspace Area */
+.cway-workspace {
+  flex: 1;
+  padding: 2.5rem 2rem;
+}
+
+/* Footer */
+.cway-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--surface-dark);
+  text-align: center;
+}
+
+.footer-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.dot {
+  color: var(--accent-orange);
+}
+
+/* Mobile Bottom Dock (Android App Style) */
+.cway-mobile-dock {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: rgba(40, 40, 40, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-color);
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  flex: 1;
+  height: 100%;
+  transition: color 0.15s ease;
+}
+
+.dock-item .material-symbols-outlined {
+  font-size: 1.35rem;
+}
+
+.dock-item:hover, .dock-item.active {
+  color: var(--accent-orange);
+}
+
+.logout-dock:hover {
+  color: var(--accent-red);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 900px) {
+  .nav-center {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .cway-navbar {
+    padding: 0 1rem;
+  }
+  .user-pill {
+    display: none;
+  }
+  .cway-workspace {
+    padding: 1.5rem 1rem;
+    padding-bottom: 80px;
+  }
+  .cway-mobile-dock {
+    display: flex;
+  }
+  .cway-footer {
+    display: none;
+  }
+}

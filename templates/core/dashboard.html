@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CwayPro - Developer Dashboard{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/core/dashboard.css' %}">
+
+<div class="dashboard-container">
+
+    <!-- Dashboard Header -->
+    <div class="page-header">
+        <div>
+            <h1>Developer Workspace</h1>
+            <p class="subtitle">Streamed code file sessions, active repositories, and CLI sync telemetry.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{% url 'tokens' %}" class="cway-btn cway-btn-secondary">
+                <span class="material-symbols-outlined">key</span>
+                <span>Manage Tokens</span>
+            </a>
+            <button class="cway-btn cway-btn-primary" onclick="openProjectModal()">
+                <span class="material-symbols-outlined">add</span>
+                <span>New Repository</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">folder_code</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total_projects }}</span>
+                <span class="stat-label">Repositories</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">description</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total_files }}</span>
+                <span class="stat-label">Tracked Files</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">sync</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total_syncs }}</span>
+                <span class="stat-label">CLI Sync Events</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">vpn_key</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.active_tokens }}</span>
+                <span class="stat-label">Active CLI Tokens</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-encrypted">
+                <span class="material-symbols-outlined">lock</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value" style="color: #b8bb26;">{{ stats.encrypted_files }}</span>
+                <span class="stat-label">Encrypted Files</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-Column Primary Section -->
+    <div class="dashboard-grid">
+        
+        <!-- Left Column: Repositories -->
+        <div class="cway-card">
+            <div class="card-header-row">
+                <h2 class="card-title">
+                    <span class="material-symbols-outlined">deployed_code</span>
+                    <span>Tracked Repositories</span>
+                </h2>
+                <button class="cway-btn cway-btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;" onclick="openProjectModal()">+ Add</button>
+            </div>
+
+            <div class="project-list">
+                {% for project in projects %}
+                <a href="{% url 'project_detail' project.slug %}" class="project-item">
+                    <div>
+                        <div class="project-name">
+                            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-orange);">folder</span>
+                            <span>{{ project.name }}</span>
+                            {% if project.is_private %}
+                                <span class="badge badge-private">private</span>
+                            {% else %}
+                                <span class="badge badge-public">public</span>
+                            {% endif %}
+                        </div>
+                        {% if project.description %}
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">{{ project.description|truncatechars:65 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="project-meta">
+                        <span class="badge badge-chip">{{ project.files.count }} files</span>
+                        <span>{{ project.updated_at|timesince }} ago</span>
+                        <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+                    </div>
+                </a>
+                {% empty %}
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                    <span class="material-symbols-outlined" style="font-size: 40px; color: var(--border-color); display: block; margin-bottom: 0.5rem;">folder_open</span>
+                    <p style="font-weight: 500; color: var(--text-bright);">No repositories synced yet</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.35rem;">Push files with <code>cwaypro review push &lt;file&gt;</code> or create one manually.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right Column: Recent Sync Stream -->
+        <div class="cway-card">
+            <div class="card-header-row">
+                <h2 class="card-title">
+                    <span class="material-symbols-outlined">terminal</span>
+                    <span>Live CLI Sync Stream</span>
+                </h2>
+                <a href="{% url 'activity_history' %}" class="cway-btn cway-btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">View All</a>
+            </div>
+
+            <div class="activity-stream">
+                {% for act in recent_activities %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        {% if act.action_type == 'FILE_CREATE' %}
+                            <span class="material-symbols-outlined" style="color: #b8bb26;">add_circle</span>
+                        {% elif act.action_type == 'FILE_UPDATE' %}
+                            <span class="material-symbols-outlined" style="color: var(--accent-orange);">sync</span>
+                        {% elif act.action_type == 'TOKEN_CREATE' %}
+                            <span class="material-symbols-outlined" style="color: #83a598;">vpn_key</span>
+                        {% else %}
+                            <span class="material-symbols-outlined" style="color: var(--text-muted);">terminal</span>
+                        {% endif %}
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-desc">{{ act.description }}</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="activity-time">{{ act.created_at|timesince }} ago</span>
+                            {% if act.project %}
+                                <span class="badge badge-chip">{{ act.project.name }}</span>
+                            {% endif %}
+                            {% if act.metadata.flags %}
+                                {% for flag_key, flag_val in act.metadata.flags.items %}
+                                    <span class="flag-chip">--{{ flag_key }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                    <span class="material-symbols-outlined" style="font-size: 40px; color: var(--border-color); display: block; margin-bottom: 0.5rem;">history_toggle_off</span>
+                    <p style="font-weight: 500; color: var(--text-bright);">No sync events recorded</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.35rem;">Use your CLI API token to push files to CwayPro.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Files Table -->
+    <div class="cway-card">
+        <div class="card-header-row">
+            <h2 class="card-title">
+                <span class="material-symbols-outlined">data_object</span>
+                <span>Recently Synced Code Files</span>
+            </h2>
+        </div>
+
+        <div class="table-responsive">
+            <table class="cway-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">
+                        <th style="padding: 0.75rem 1rem;">File Path</th>
+                        <th style="padding: 0.75rem 1rem;">Repository</th>
+                        <th style="padding: 0.75rem 1rem;">Language</th>
+                        <th style="padding: 0.75rem 1rem;">Version</th>
+                        <th style="padding: 0.75rem 1rem;">Flags Captured</th>
+                        <th style="padding: 0.75rem 1rem;">Last Modified</th>
+                        <th style="padding: 0.75rem 1rem; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in recent_files %}
+                    <tr style="border-bottom: 1px solid rgba(60, 56, 54, 0.5);">
+                        <td style="padding: 0.85rem 1rem;">
+                            <a href="{% url 'file_detail' file.project.slug file.id %}" style="text-decoration: none; font-family: var(--font-mono); font-weight: 600; color: var(--text-bright); display: flex; align-items: center; gap: 0.4rem;">
+                                {% if file.is_encrypted %}
+                                    <span class="material-symbols-outlined" style="font-size: 16px; color: #b8bb26;" title="AES Encrypted">lock</span>
+                                {% else %}
+                                    <span class="material-symbols-outlined" style="font-size: 16px; color: var(--accent-orange);">code</span>
+                                {% endif %}
+                                <span>{{ file.file_path }}</span>
+                            </a>
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            <a href="{% url 'project_detail' file.project.slug %}" style="text-decoration: none; color: var(--text-primary); font-size: 0.9rem;">
+                                {{ file.project.name }}
+                            </a>
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            <span class="badge badge-chip">{{ file.language }}</span>
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-family: var(--font-mono); color: var(--accent-orange);">
+                            v{{ file.version }}
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            {% if file.is_new_file %}
+                                <span class="flag-chip flag-chip-green">--new-file</span>
+                            {% endif %}
+                            {% if file.is_encrypted %}
+                                <span class="flag-chip flag-chip-green">--encrypt</span>
+                            {% endif %}
+                            {% for f_name, f_val in file.terminal_flags.items %}
+                                {% if f_name != 'new_file' and f_name != 'new-file' and f_name != 'encrypt' and f_name != 'e' %}
+                                    <span class="flag-chip">--{{ f_name }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                            {{ file.updated_at|timesince }} ago
+                        </td>
+                        <td style="padding: 0.85rem 1rem; text-align: right;">
+                            <a href="{% url 'file_detail' file.project.slug file.id %}" class="cway-btn cway-btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+                                Inspect
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No code files uploaded yet. Push files from the CLI to view snippets and flags here.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Create Project Modal -->
+<div id="projectModal" class="cway-modal-overlay" style="display: none;">
+    <div class="cway-modal">
+        <div class="modal-header">
+            <h3>Create Repository / Project</h3>
+            <button class="btn-close" onclick="closeProjectModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form method="post" action="{% url 'create_project' %}" class="modal-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_name">Repository Name</label>
+                {{ project_form.name }}
+                <span class="form-hint">Used to group CLI file sessions (e.g. backend-api).</span>
+            </div>
+            <div class="form-group">
+                <label for="id_description">Description (optional)</label>
+                {{ project_form.description }}
+            </div>
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+                {{ project_form.is_private }}
+                <label for="id_is_private" style="margin: 0; cursor: pointer;">Private repository</label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cway-btn cway-btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                <button type="submit" class="cway-btn cway-btn-primary">Create Repository</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openProjectModal() {
+        document.getElementById('projectModal').style.display = 'flex';
+    }
+    function closeProjectModal() {
+        document.getElementById('projectModal').style.display = 'none';
+    }
+</script>
+{% endblock content %}

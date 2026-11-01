@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CwayPro - {{ file.filename }}{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/core/dashboard.css' %}">
+
+<div class="file-container">
+
+    <!-- File Breadcrumbs & Header -->
+    <div class="page-header">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+                <a href="{% url 'dashboard' %}" style="text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                    <span>Dashboard</span>
+                </a>
+                <span style="color: var(--text-muted);">/</span>
+                <a href="{% url 'project_detail' project.slug %}" style="text-decoration: none; color: var(--text-muted);">
+                    {{ project.name }}
+                </a>
+                <span style="color: var(--text-muted);">/</span>
+                <span style="color: var(--text-bright); font-weight: 600;">{{ file.filename }}</span>
+            </div>
+            <h1 style="font-family: var(--font-mono); font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                {% if file.is_encrypted %}
+                    <span class="material-symbols-outlined" style="color: #b8bb26;">lock</span>
+                {% else %}
+                    <span class="material-symbols-outlined" style="color: var(--accent-orange);">description</span>
+                {% endif %}
+                <span>{{ file.file_path }}</span>
+            </h1>
+            <p class="subtitle">Synced from local CLI • Updated {{ file.updated_at|date:"M d, Y H:i" }} ({{ file.updated_at|timesince }} ago)</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button class="cway-btn cway-btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('rawCodeContent').innerText); this.innerText = 'Copied!';">
+                <span class="material-symbols-outlined">content_copy</span>
+                <span>Copy Code</span>
+            </button>
+            <a href="{% url 'project_detail' project.slug %}" class="cway-btn cway-btn-secondary">
+                <span class="material-symbols-outlined">folder</span>
+                <span>View Repository</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Security Gateway Status Banners -->
+    {% if file.is_encrypted %}
+    <div class="security-banner security-banner-encrypted">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span class="material-symbols-outlined" style="font-size: 24px;">verified_user</span>
+            <div>
+                <strong style="display: block; font-size: 0.95rem;">Encrypted at Rest with CwayPro Crypto Engine</strong>
+                <span style="font-size: 0.82rem; opacity: 0.85;">Payload protected with {{ file.encryption_algorithm }} symmetric cipher envelope.</span>
+            </div>
+        </div>
+        <button type="button" class="cway-btn cway-btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="toggleCiphertext()">
+            <span class="material-symbols-outlined">enhanced_encryption</span>
+            <span id="cipherToggleBtnText">Inspect Raw Ciphertext</span>
+        </button>
+    </div>
+    {% endif %}
+
+    {% if security_dto.has_secrets %}
+    <div class="security-banner security-banner-advisory">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span class="material-symbols-outlined" style="font-size: 24px;">security</span>
+            <div>
+                <strong style="display: block; font-size: 0.95rem;">Security Translation Layer: Sensitive Credentials Detected</strong>
+                <span style="font-size: 0.82rem; opacity: 0.9;">
+                    {% if security_dto.is_revealed %}
+                        Secrets are currently UNMASKED for your session. Exercise caution when sharing your screen.
+                    {% else %}
+                        {{ security_dto.secrets_count }} sensitive credential(s) automatically redacted to prevent browser leakage.
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div>
+            {% if security_dto.is_revealed %}
+                <a href="?reveal=0" class="cway-btn cway-btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                    <span class="material-symbols-outlined">visibility_off</span>
+                    <span>Mask Secrets</span>
+                </a>
+            {% else %}
+                <a href="?reveal=1" class="cway-btn cway-btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; border-color: var(--accent-orange); color: var(--accent-orange);">
+                    <span class="material-symbols-outlined">visibility</span>
+                    <span>Reveal Secrets</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Metadata & Flags Bar -->
+    <div class="cway-card" style="padding: 1rem 1.5rem; background-color: var(--surface-dark);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <span class="badge badge-chip" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                    Language: <strong style="color: var(--text-bright); margin-left: 0.25rem;">{{ file.language }}</strong>
+                </span>
+                <span class="badge badge-chip" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                    Version: <strong style="color: var(--accent-orange); margin-left: 0.25rem;">v{{ file.version }}</strong>
+                </span>
+                <span class="badge badge-chip" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                    Lines: <strong style="color: var(--text-bright); margin-left: 0.25rem;">{{ file.line_count }}</strong>
+                </span>
+                {% if file.is_encrypted %}
+                    <span class="badge badge-encrypted" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">lock</span>
+                        <span>AES Encrypted</span>
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Terminal Flags Captured -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">CLI Flags:</span>
+                {% if file.is_new_file %}
+                    <span class="flag-chip flag-chip-green">--new-file</span>
+                {% endif %}
+                {% if file.is_encrypted %}
+                    <span class="flag-chip flag-chip-green">--encrypt</span>
+                {% endif %}
+                {% for f_name, f_val in file.terminal_flags.items %}
+                    {% if f_name != 'new_file' and f_name != 'new-file' and f_name != 'encrypt' and f_name != 'e' %}
+                        <span class="flag-chip">--{{ f_name }}{% if f_val != True %}={{ f_val }}{% endif %}</span>
+                    {% endif %}
+                {% empty %}
+                    {% if not file.is_new_file and not file.is_encrypted %}
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">None passed</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Raw Ciphertext Box (Hidden by default, toggled on demand) -->
+    {% if file.is_encrypted %}
+    <div id="ciphertextSection" class="code-viewer-card" style="display: none; border-color: rgba(184, 187, 38, 0.4);">
+        <div class="code-viewer-header" style="background-color: #1a1e17;">
+            <div class="code-viewer-title" style="color: #b8bb26;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">lock</span>
+                <span>Raw Ciphertext Stored in PostgreSQL (Database Level)</span>
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">Base64 Fernet Token</span>
+        </div>
+        <div class="code-viewer-body" style="word-break: break-all; color: #b8bb26;">
+            <code>{{ file.content }}</code>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Code Viewer -->
+    <div id="decryptedCodeSection" class="code-viewer-card">
+        <div class="code-viewer-header">
+            <div class="code-viewer-title">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--accent-orange);">terminal</span>
+                <span>{{ file.filename }}</span>
+                {% if security_dto.has_secrets and not security_dto.is_revealed %}
+                    <span class="badge badge-chip" style="font-size: 0.72rem; color: var(--accent-orange); margin-left: 0.5rem;">[Secrets Masked]</span>
+                {% endif %}
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">UTF-8 • {{ file.language }}</span>
+        </div>
+        <div class="code-viewer-body">
+            <div id="rawCodeContent" style="display: none;">{{ security_dto.display_content }}</div>
+            {% for line in code_lines %}
+            <div class="code-line {% if line.is_secret_line %}secret-line{% endif %}">
+                <span class="code-line-num">{{ line.number }}</span>
+                <span class="code-line-text">{{ line.content }}</span>
+            </div>
+            {% empty %}
+            <div style="color: var(--text-muted); font-style: italic;">(File content is empty)</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Revision History Timeline -->
+    <div class="cway-card">
+        <div class="card-header-row">
+            <h2 class="card-title">
+                <span class="material-symbols-outlined">history</span>
+                <span>Revision History ({{ revisions.count }} previous snapshot{{ revisions.count|pluralize }})</span>
+            </h2>
+        </div>
+
+        <div class="activity-stream">
+            {% for rev in revisions %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <span class="material-symbols-outlined" style="color: var(--accent-orange);">history_edu</span>
+                </div>
+                <div class="activity-details">
+                    <div class="activity-desc">Version {{ rev.version }} snapshot</div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <span class="activity-time">{{ rev.created_at|date:"M d, Y H:i:s" }} ({{ rev.created_at|timesince }} ago)</span>
+                        <span class="badge badge-chip">{{ rev.line_count }} lines</span>
+                        {% if rev.is_encrypted %}
+                            <span class="badge badge-encrypted" style="font-size: 0.72rem;">Encrypted</span>
+                        {% endif %}
+                        {% if rev.terminal_flags %}
+                            {% for r_k, r_v in rev.terminal_flags.items %}
+                                <span class="flag-chip">--{{ r_k }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">This is the initial version (v1) of this code file. Future syncs will record revisions here.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function toggleCiphertext() {
+        const cipherBox = document.getElementById('ciphertextSection');
+        const toggleBtnText = document.getElementById('cipherToggleBtnText');
+        if (!cipherBox) return;
+        if (cipherBox.style.display === 'none') {
+            cipherBox.style.display = 'flex';
+            toggleBtnText.innerText = 'Hide Raw Ciphertext';
+        } else {
+            cipherBox.style.display = 'none';
+            toggleBtnText.innerText = 'Inspect Raw Ciphertext';
+        }
+    }
+</script>
+{% endblock content %}

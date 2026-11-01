@@ -1,0 +1,264 @@
+{% load i18n %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Third-Party Login Failure" %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material 3 Icons (Material Symbols Outlined) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- JetBrains Mono & Fira Code Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['JetBrains Mono', 'monospace'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        gruvbox: {
+                            bgHard: '#1d2021',
+                            bg: '#282828',
+                            bgSoft: '#32302f',
+                            bg1: '#3c3836',
+                            bg2: '#504945',
+                            fg0: '#fbf1c7',
+                            fg: '#ebdbb2',
+                            fg4: '#a89984',
+                            gray: '#928374',
+                            red: '#fb4934',
+                            green: '#b8bb26',
+                            yellow: '#fabd2f',
+                            blue: '#83a598',
+                            purple: '#d3869b',
+                            aqua: '#8ec07c',
+                            orange: '#fe8019'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --gb-accent: #fb4934;
+            --gb-accent-orange: #fe8019;
+        }
+
+        body {
+            background-color: #1d2021;
+            color: #ebdbb2;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .gb-panel {
+            background-color: #282828;
+            border: 1px solid #3c3836;
+        }
+
+        .gb-border {
+            border-color: #3c3836;
+        }
+
+        /* Material Symbols styling */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1d2021;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3c3836;
+        }
+
+        .accent-text { color: var(--gb-accent); }
+        .accent-bg { background-color: var(--gb-accent); }
+        .accent-border { border-color: var(--gb-accent); }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col justify-between antialiased select-none text-xs bg-gruvbox-bgHard">
+
+    <!-- TOP CONTROL BAR (Desktop & Mobile status header) -->
+    <header class="h-12 border-b border-gruvbox-bg1 bg-gruvbox-bg px-4 lg:px-6 flex items-center justify-between z-20 shrink-0 font-mono">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 bg-gruvbox-red inline-block"></span>
+            <span class="font-bold text-xs tracking-wider text-gruvbox-fg0 uppercase">AUTH_ERROR // 401</span>
+        </div>
+
+        <!-- Palette Preview Switcher -->
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <button onclick="toggleAccentMenu()" class="px-2 py-1 border border-gruvbox-bg1 bg-gruvbox-bgSoft hover:bg-gruvbox-bg2 text-gruvbox-fg flex items-center gap-2 text-[11px] transition-colors">
+                    <span class="w-2 h-2 accent-bg"></span>
+                    <span class="hidden sm:inline" id="current-accent-name">Red Accent</span>
+                    <span class="material-symbols-outlined text-sm text-gruvbox-gray">expand_more</span>
+                </button>
+                <div id="accent-menu" class="hidden absolute right-0 mt-1 w-40 gb-panel p-1 z-50 space-y-1 shadow-none">
+                    <button onclick="setAccent('#fb4934', 'Red Accent')" class="w-full flex items-center gap-2 px-2 py-1 text-[11px] text-gruvbox-fg hover:bg-gruvbox-bgSoft">
+                        <span class="w-2 h-2 bg-gruvbox-red"></span> Red Accent
+                    </button>
+                    <button onclick="setAccent('#fe8019', 'Orange Accent')" class="w-full flex items-center gap-2 px-2 py-1 text-[11px] text-gruvbox-fg hover:bg-gruvbox-bgSoft">
+                        <span class="w-2 h-2 bg-gruvbox-orange"></span> Orange Accent
+                    </button>
+                    <button onclick="setAccent('#fabd2f', 'Yellow Accent')" class="w-full flex items-center gap-2 px-2 py-1 text-[11px] text-gruvbox-fg hover:bg-gruvbox-bgSoft">
+                        <span class="w-2 h-2 bg-gruvbox-yellow"></span> Yellow Accent
+                    </button>
+                </div>
+            </div>
+            <span class="hidden sm:inline-block text-[10px] text-gruvbox-gray border-l border-gruvbox-bg1 pl-3">SECURE_NODE</span>
+        </div>
+    </header>
+
+    <!-- MAIN CENTERED AUTH ERROR CARD VIEWPORT -->
+    <main class="flex-1 flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
+        <div class="w-full max-w-md gb-panel p-6 space-y-6 relative border-t-2 accent-border shadow-none">
+            
+            <!-- Header & Status Icon -->
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 text-[10px] font-mono text-gruvbox-gray uppercase tracking-widest">
+                        <span class="material-symbols-outlined text-sm text-gruvbox-red">gpp_maybe</span>
+                        <span>OAuth Handshake Failed</span>
+                    </div>
+                    <h2 class="text-base font-bold text-gruvbox-fg0 tracking-tight font-mono">
+                        {% trans "Third-Party Login Failure" %}
+                    </h2>
+                </div>
+                <div class="p-2 border border-gruvbox-bg1 bg-gruvbox-bgSoft">
+                    <span class="material-symbols-outlined text-xl accent-text">lock_reset</span>
+                </div>
+            </div>
+
+            <!-- Error Description -->
+            <p class="text-xs text-gruvbox-fg text-justify leading-relaxed font-mono">
+                {% trans "An error occurred while attempting to login via your third-party account." %}
+            </p>
+
+            <!-- Conditional Django Auth Error Detail Box -->
+            {% if auth_error %}
+            <div class="gb-panel bg-gruvbox-bgSoft p-3 border-l-2 accent-border space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono font-bold text-gruvbox-fg0 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm text-gruvbox-yellow font-normal">bug_report</span>
+                        EXCEPTION_TRACE
+                    </span>
+                    <button onclick="toggleErrorDetails()" class="text-[9px] font-mono text-gruvbox-gray hover:text-gruvbox-fg flex items-center gap-1">
+                        <span id="expand-label">Expand</span>
+                        <span id="expand-icon" class="material-symbols-outlined text-xs">unfold_more</span>
+                    </button>
+                </div>
+
+                <div class="error-details text-[11px] font-mono text-gruvbox-red break-all">
+                    {{ auth_error.exception }}
+                </div>
+
+                <!-- Expanded Diagnostic Mock Trace (Toggleable Preview) -->
+                <div id="extended-trace" class="hidden border-t border-gruvbox-bg1 pt-2 mt-2 space-y-1 text-[10px] font-mono text-gruvbox-gray">
+                    <div>> Provider: Google / GitHub OAuth2</div>
+                    <div>> Reason: OAuth2Error [access_denied]</div>
+                    <div>> Timestamp: {% now "Y-m-d H:i:s" %}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions Container -->
+            <div class="actions pt-2 space-y-2">
+                <a href="{% url 'account_login' %}" class="btn w-full py-2.5 px-4 bg-gruvbox-bgSoft border border-gruvbox-bg1 hover:border-gruvbox-bg2 text-gruvbox-fg0 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-gruvbox-bg1 transition-all">
+                    <span class="material-symbols-outlined text-sm accent-text">arrow_back</span>
+                    <span>Back to Login</span>
+                </a>
+
+                <button onclick="triggerToast('Retrying OAuth Handshake...')" class="w-full py-2 px-4 accent-bg text-gruvbox-bgHard font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+                    <span class="material-symbols-outlined text-sm">refresh</span>
+                    <span>Retry Authentication</span>
+                </button>
+            </div>
+
+            <!-- Footer Metadata -->
+            <div class="pt-4 border-t border-gruvbox-bg1 flex items-center justify-between text-[9px] font-mono text-gruvbox-gray">
+                <span>ERR_CODE: OAUTH_REVOKED</span>
+                <span>SYS_ID: 0x99A4</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- MOBILE NATIVE BOTTOM BAR (App-style navigation fallback) -->
+    <div class="md:hidden h-14 border-t border-gruvbox-bg1 bg-gruvbox-bg px-6 flex items-center justify-around z-40 shrink-0">
+        <a href="{% url 'account_login' %}" class="flex flex-col items-center gap-0.5 text-gruvbox-fg">
+            <span class="material-symbols-outlined text-lg accent-text">login</span>
+            <span class="text-[8px] font-mono">LOGIN</span>
+        </a>
+        <button onclick="triggerToast('Help Docs Loaded')" class="flex flex-col items-center gap-0.5 text-gruvbox-gray">
+            <span class="material-symbols-outlined text-lg">help_outline</span>
+            <span class="text-[8px] font-mono">HELP</span>
+        </button>
+        <button onclick="triggerToast('Status: Systems Normal')" class="flex flex-col items-center gap-0.5 text-gruvbox-gray">
+            <span class="material-symbols-outlined text-lg">info</span>
+            <span class="text-[8px] font-mono">STATUS</span>
+        </button>
+    </div>
+
+    <!-- TOAST NOTIFICATION PREVIEW -->
+    <div id="toast" class="fixed bottom-16 md:bottom-6 right-4 gb-panel bg-gruvbox-bg p-2.5 text-gruvbox-fg font-mono text-[11px] flex items-center gap-2 translate-y-16 opacity-0 transition-all duration-200 z-50">
+        <span class="material-symbols-outlined text-sm accent-text">terminal</span>
+        <span id="toast-msg">Event logged</span>
+    </div>
+
+    <!-- JAVASCRIPT PREVIEW CONTROLS -->
+    <script>
+        function toggleAccentMenu() {
+            document.getElementById('accent-menu').classList.toggle('hidden');
+        }
+
+        function setAccent(colorHex, name) {
+            document.documentElement.style.setProperty('--gb-accent', colorHex);
+            document.getElementById('current-accent-name').innerText = name;
+            document.getElementById('accent-menu').classList.add('hidden');
+            triggerToast('Accent updated to ' + name);
+        }
+
+        function toggleErrorDetails() {
+            const trace = document.getElementById('extended-trace');
+            const label = document.getElementById('expand-label');
+            const icon = document.getElementById('expand-icon');
+
+            if (trace.classList.contains('hidden')) {
+                trace.classList.remove('hidden');
+                label.innerText = 'Collapse';
+                icon.innerText = 'unfold_less';
+            } else {
+                trace.classList.add('hidden');
+                label.innerText = 'Expand';
+                icon.innerText = 'unfold_more';
+            }
+        }
+
+        function triggerToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-16', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-16', 'opacity-0');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

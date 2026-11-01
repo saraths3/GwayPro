@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CwayPro - Activity History{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/core/dashboard.css' %}">
+
+<div class="history-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1>Activity & Sync History</h1>
+            <p class="subtitle">Complete audit timeline of CLI uploads, terminal flags, and workspace events.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="{% url 'activity_history' %}" class="cway-btn {% if not action_filter %}cway-btn-primary{% else %}cway-btn-secondary{% endif %}" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                All Events
+            </a>
+            <a href="{% url 'activity_history' %}?action=CLI_SYNC" class="cway-btn {% if action_filter == 'CLI_SYNC' %}cway-btn-primary{% else %}cway-btn-secondary{% endif %}" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                CLI Syncs
+            </a>
+            <a href="{% url 'activity_history' %}?action=FILE_CREATE" class="cway-btn {% if action_filter == 'FILE_CREATE' %}cway-btn-primary{% else %}cway-btn-secondary{% endif %}" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                New Files (--new-file)
+            </a>
+            <a href="{% url 'activity_history' %}?action=FILE_UPDATE" class="cway-btn {% if action_filter == 'FILE_UPDATE' %}cway-btn-primary{% else %}cway-btn-secondary{% endif %}" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                File Updates
+            </a>
+        </div>
+    </div>
+
+    <!-- History Stream Card -->
+    <div class="cway-card">
+        <div class="card-header-row">
+            <h2 class="card-title">
+                <span class="material-symbols-outlined">timeline</span>
+                <span>Event Stream</span>
+            </h2>
+            <span class="badge badge-chip">{{ activities.count }} Event{{ activities.count|pluralize }}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="cway-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">
+                        <th style="padding: 0.75rem 1rem;">Action</th>
+                        <th style="padding: 0.75rem 1rem;">Repository</th>
+                        <th style="padding: 0.75rem 1rem;">Description</th>
+                        <th style="padding: 0.75rem 1rem;">Captured Flags</th>
+                        <th style="padding: 0.75rem 1rem; text-align: right;">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in activities %}
+                    <tr style="border-bottom: 1px solid rgba(60, 56, 54, 0.5);">
+                        <td style="padding: 0.85rem 1rem;">
+                            <span class="badge badge-chip" style="font-size: 0.8rem;">
+                                {{ act.get_action_type_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            {% if act.project %}
+                                <a href="{% url 'project_detail' act.project.slug %}" style="text-decoration: none; color: var(--text-bright); font-weight: 500;">
+                                    {{ act.project.name }}
+                                </a>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 0.85rem 1rem; color: var(--text-primary); font-size: 0.9rem;">
+                            {{ act.description }}
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            {% if act.metadata.flags %}
+                                {% for f_k, f_v in act.metadata.flags.items %}
+                                    <span class="flag-chip">--{{ f_k }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 0.85rem 1rem; text-align: right; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">
+                            {{ act.created_at|date:"M d, Y H:i:s" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            No activity events recorded under this filter.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

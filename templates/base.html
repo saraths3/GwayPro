@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CwayPro - Dashboard{% endblock title %}</title>
+    
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap">
+    
+    <!-- External Django Static Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+    <div class="cway-shell">
+        
+        {% block header %}
+        <header class="cway-navbar">
+            <div class="nav-left">
+                <a href="{% url 'dashboard' %}" class="brand-logo">
+                    <span class="material-symbols-outlined">terminal</span>
+                    <span>CwayPro</span>
+                </a>
+            </div>
+
+            <nav class="nav-center">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.view_name == 'dashboard' or request.resolver_match.view_name == 'project_detail' or request.resolver_match.view_name == 'file_detail' %}active{% endif %}">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'activity_history' %}" class="nav-link {% if request.resolver_match.view_name == 'activity_history' %}active{% endif %}">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>History</span>
+                </a>
+                <a href="{% url 'tokens' %}" class="nav-link {% if request.resolver_match.view_name == 'tokens' %}active{% endif %}">
+                    <span class="material-symbols-outlined">key</span>
+                    <span>Tokens</span>
+                </a>
+            </nav>
+
+            <div class="nav-right">
+                <div class="user-pill">
+                    <span class="material-symbols-outlined">account_circle</span>
+                    <span>{{ user.email|default:"Developer" }}</span>
+                </div>
+                <a href="{% url 'account_logout' %}" class="btn-icon-logout" title="Sign Out">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </header>
+        {% endblock header %}
+
+        <main class="cway-workspace">
+            {% if messages %}
+                <div class="messages-container" style="margin-bottom: 1.5rem;">
+                    {% for message in messages %}
+                        <div class="cway-alert cway-alert-{{ message.tags }}" style="padding: 0.85rem 1.25rem; border-radius: 8px; margin-bottom: 0.5rem; background-color: var(--surface-dark); border: 1px solid var(--border-color); color: var(--text-bright); display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="material-symbols-outlined" style="color: var(--accent-orange);">info</span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}
+            {% endblock content %}
+        </main>
+
+        {% block footer %}
+        <footer class="cway-footer">
+            <div class="footer-content">
+                <span>CwayPro Autonomous Code Engine</span>
+                <span class="dot">•</span>
+                <span>PostgreSQL + Celery + Valkey</span>
+            </div>
+        </footer>
+        {% endblock footer %}
+
+        <!-- Android-Style Floating Bottom Dock (Mobile) -->
+        <nav class="cway-mobile-dock">
+            <a href="{% url 'dashboard' %}" class="dock-item {% if request.resolver_match.view_name == 'dashboard' %}active{% endif %}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'activity_history' %}" class="dock-item {% if request.resolver_match.view_name == 'activity_history' %}active{% endif %}">
+                <span class="material-symbols-outlined">history</span>
+                <span>History</span>
+            </a>
+            <a href="{% url 'tokens' %}" class="dock-item {% if request.resolver_match.view_name == 'tokens' %}active{% endif %}">
+                <span class="material-symbols-outlined">key</span>
+                <span>Tokens</span>
+            </a>
+            <a href="{% url 'account_logout' %}" class="dock-item logout-dock">
+                <span class="material-symbols-outlined">logout</span>
+                <span>Exit</span>
+            </a>
+        </nav>
+
+    </div>
+</body>
+</html>

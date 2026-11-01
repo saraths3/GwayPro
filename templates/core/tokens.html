@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    CwayPro - Tokens
+{% endblock title %}
+
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/core/tokens.css' %}">
+<div class="tokens-container">
+    
+    <!-- Page Header Section -->
+    <div class="page-header">
+        <div>
+            <h1>API Tokens & CLI Setup</h1>
+            <p class="subtitle">Manage authentication tokens for the `cwaypro` command-line interface tool.</p>
+        </div>
+        <button class="cway-btn cway-btn-primary" onclick="openTokenModal()">
+            <span class="material-symbols-outlined">add</span>
+            <span>Generate New Token</span>
+        </button>
+    </div>
+
+    <!-- Active Tokens Card -->
+    <div class="cway-card">
+        <h2 class="card-title">
+            <span class="material-symbols-outlined">key</span>
+            <span>Active Personal Access Tokens</span>
+        </h2>
+
+        {% if newly_created_token %}
+        <div class="cway-alert" style="background-color: rgba(254, 128, 25, 0.15); border: 1px solid var(--accent-orange); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <strong style="color: var(--accent-orange); display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined">key</span> Make sure to copy your API Token now
+                </strong>
+                <button type="button" class="cway-btn cway-btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;" onclick="navigator.clipboard.writeText('{{ newly_created_token }}'); this.innerText = 'Copied!';">Copy</button>
+            </div>
+            <code style="font-family: var(--font-mono); color: var(--text-bright); background: var(--bg-dark); padding: 0.5rem 0.75rem; border-radius: 4px; display: block; word-break: break-all;">{{ newly_created_token }}</code>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">This token will not be shown again. Paste it into your terminal: <code>cwaypro auth login --token {{ newly_created_token }}</code></p>
+        </div>
+        {% endif %}
+        
+        <div class="table-responsive">
+            <table class="cway-table">
+                <thead>
+                    <tr>
+                        <th>Token Name</th>
+                        <th>Token Prefix</th>
+                        <th>Created</th>
+                        <th>Last Used</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for token in tokens %}
+                    <tr>
+                        <td>
+                            <div class="token-name-col">
+                                <span class="material-symbols-outlined token-type-icon">terminal</span>
+                                <span class="fw-semibold text-bright">{{ token.name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <code class="token-code">{{ token.masked_key }}</code>
+                        </td>
+                        <td class="text-muted">{{ token.created_at|date:"M d, Y" }}</td>
+                        <td class="text-green">
+                            {% if token.last_used_at %}
+                                {{ token.last_used_at|timesince }} ago
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            <form method="post" action="{% url 'revoke_token' token.id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to revoke {{ token.name }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon-danger" title="Revoke Token">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No active personal access tokens found. Generate one to authenticate your CLI!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CLI Quick Start Guide Card -->
+    <div class="cway-card cli-guide-card">
+        <h2 class="card-title">
+            <span class="material-symbols-outlined">terminal</span>
+            <span>CLI Quick Start Guide</span>
+        </h2>
+        <p class="guide-desc">Authenticate your local machine to push code file data directly to your CwayPro web dashboard using the CLI companion tool:</p>
+        
+        <div class="terminal-box">
+            <div class="terminal-header">
+                <span class="terminal-dots">
+                    <span class="dot-red"></span>
+                    <span class="dot-yellow"></span>
+                    <span class="dot-green"></span>
+                </span>
+                <span class="terminal-title">bash — cwaypro</span>
+            </div>
+            <pre class="terminal-body"><code># 1. Configure your personal token globally
+cwaypro auth login --token cwp_live_your_secret_token_here
+
+# 2. Push local file data to your website dashboard
+cwaypro review push ./src/main.py</code></pre>
+        </div>
+    </div>
+
+</div>
+
+<!-- Generate Token Modal -->
+<div id="tokenModal" class="cway-modal-overlay" style="display: none;">
+    <div class="cway-modal">
+        <div class="modal-header">
+            <h3>Generate New API Token</h3>
+            <button class="btn-close" onclick="closeTokenModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form method="post" action="" class="modal-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="token_name">Token Description / Name</label>
+                <input type="text" id="token_name" name="name" placeholder="e.g. Office Laptop CLI" required class="cway-input">
+                <span class="form-hint">Choose a recognizable label to identify where this token is deployed.</span>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cway-btn cway-btn-secondary" onclick="closeTokenModal()">Cancel</button>
+                <button type="submit" class="cway-btn cway-btn-primary">Generate Token</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openTokenModal() {
+        document.getElementById('tokenModal').style.display = 'flex';
+    }
+    function closeTokenModal() {
+        document.getElementById('tokenModal').style.display = 'none';
+    }
+</script>
+{% endblock content %}

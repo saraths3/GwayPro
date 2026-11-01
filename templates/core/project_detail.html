@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CwayPro - {{ project.name }}{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/core/dashboard.css' %}">
+
+<div class="project-container">
+    
+    <!-- Project Header -->
+    <div class="page-header">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+                <a href="{% url 'dashboard' %}" style="text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                    <span>Dashboard</span>
+                </a>
+                <span style="color: var(--text-muted);">/</span>
+                <span style="color: var(--text-bright); font-weight: 600;">{{ project.name }}</span>
+            </div>
+            <h1>{{ project.name }}</h1>
+            <p class="subtitle">{{ project.description|default:"No description provided for this repository." }}</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            {% if project.is_private %}
+                <span class="badge badge-private" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">Private Repository</span>
+            {% else %}
+                <span class="badge badge-public" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">Public Repository</span>
+            {% endif %}
+            <span class="badge badge-chip" style="padding: 0.4rem 0.75rem; font-size: 0.85rem;">{{ file_count }} files</span>
+        </div>
+    </div>
+
+    <!-- Quick CLI Command Info Box -->
+    <div class="cway-card" style="background-color: #141617; border-color: var(--border-color); padding: 1.25rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <strong style="color: var(--text-bright); display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                    <span class="material-symbols-outlined" style="color: var(--accent-orange);">terminal</span>
+                    Sync files from terminal to this repository:
+                </strong>
+                <code style="display: inline-block; font-family: var(--font-mono); color: #fabd2f; margin-top: 0.4rem; background: var(--bg-dark); padding: 0.35rem 0.75rem; border-radius: 4px; border: 1px solid var(--border-color);">
+                    cwaypro review push --project "{{ project.name }}" ./path/to/file.py --new-file
+                </code>
+            </div>
+        </div>
+    </div>
+
+    <!-- Files in this Repository -->
+    <div class="cway-card">
+        <div class="card-header-row">
+            <h2 class="card-title">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span>Tracked Files in {{ project.name }}</span>
+            </h2>
+        </div>
+
+        <div class="table-responsive">
+            <table class="cway-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">
+                        <th style="padding: 0.75rem 1rem;">File Name</th>
+                        <th style="padding: 0.75rem 1rem;">Relative Path</th>
+                        <th style="padding: 0.75rem 1rem;">Language</th>
+                        <th style="padding: 0.75rem 1rem;">Version</th>
+                        <th style="padding: 0.75rem 1rem;">Terminal Flags</th>
+                        <th style="padding: 0.75rem 1rem;">Size</th>
+                        <th style="padding: 0.75rem 1rem;">Last Synced</th>
+                        <th style="padding: 0.75rem 1rem; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                    <tr style="border-bottom: 1px solid rgba(60, 56, 54, 0.5);">
+                        <td style="padding: 0.85rem 1rem;">
+                            <a href="{% url 'file_detail' project.slug file.id %}" style="text-decoration: none; font-family: var(--font-mono); font-weight: 600; color: var(--text-bright); display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-orange);">draft</span>
+                                <span>{{ file.filename }}</span>
+                            </a>
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.85rem;">
+                            {{ file.file_path }}
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            <span class="badge badge-chip">{{ file.language }}</span>
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-family: var(--font-mono); color: var(--accent-orange);">
+                            v{{ file.version }}
+                        </td>
+                        <td style="padding: 0.85rem 1rem;">
+                            {% if file.is_new_file %}
+                                <span class="flag-chip flag-chip-green">--new-file</span>
+                            {% endif %}
+                            {% for f_key, f_val in file.terminal_flags.items %}
+                                {% if f_key != 'new_file' and f_key != 'new-file' %}
+                                    <span class="flag-chip">--{{ f_key }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);">
+                            {{ file.file_size_bytes }} B
+                        </td>
+                        <td style="padding: 0.85rem 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                            {{ file.updated_at|timesince }} ago
+                        </td>
+                        <td style="padding: 0.85rem 1rem; text-align: right;">
+                            <a href="{% url 'file_detail' project.slug file.id %}" class="cway-btn cway-btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+                                Inspect
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            No files pushed to this repository yet. Use the CLI to sync your local code!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Repository Activity Stream -->
+    <div class="cway-card">
+        <div class="card-header-row">
+            <h2 class="card-title">
+                <span class="material-symbols-outlined">history</span>
+                <span>Repository Activity Stream</span>
+            </h2>
+        </div>
+        <div class="activity-stream">
+            {% for act in activities %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <span class="material-symbols-outlined">terminal</span>
+                </div>
+                <div class="activity-details">
+                    <div class="activity-desc">{{ act.description }}</div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="activity-time">{{ act.created_at|date:"M d, Y H:i" }} ({{ act.created_at|timesince }} ago)</span>
+                        {% if act.metadata.flags %}
+                            {% for f_k, f_v in act.metadata.flags.items %}
+                                <span class="flag-chip">--{{ f_k }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">No activity logged yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

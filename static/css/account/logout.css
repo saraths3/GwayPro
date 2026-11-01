@@ -1,0 +1,95 @@
+:root {
+          --bg-dark: #1d2021;
+          --surface-dark: #282828;
+          --border-color: #3c3836;
+          --text-primary: #ebdbb2;
+          --text-muted: #928374;
+          --text-bright: #fbf1c7;
+          --accent-red: #fb4934;
+          --accent-orange: #fe8019;
+          --font-sans: 'Inter', sans-serif;
+          --font-mono: 'Fira Code', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          background-color: var(--bg-dark);
+          color: var(--text-primary);
+          font-family: var(--font-sans);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+        }
+        .cway-auth-card {
+          width: 100%;
+          max-width: 400px;
+          background-color: var(--surface-dark);
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          padding: 2rem;
+          text-align: center;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .cway-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-family: var(--font-mono);
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--accent-orange);
+          background: rgba(254, 128, 25, 0.08);
+          border: 1px solid rgba(254, 128, 25, 0.2);
+          padding: 0.25rem 0.6rem;
+          border-radius: 4px;
+          margin-bottom: 1.25rem;
+        }
+        .cway-badge .material-symbols-outlined { font-size: 0.95rem; }
+        .cway-auth-card h1 {
+          font-size: 1.35rem;
+          font-weight: 700;
+          color: var(--text-bright);
+          margin-bottom: 0.75rem;
+        }
+        .cway-desc {
+          font-size: 0.875rem;
+          color: var(--text-muted);
+          line-height: 1.5;
+          margin-bottom: 1.75rem;
+        }
+        .cway-form { width: 100%; }
+        .cway-btn-submit {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          background-color: rgba(251, 73, 52, 0.1);
+          color: var(--accent-red);
+          border: 1px solid rgba(251, 73, 52, 0.3);
+          border-radius: 6px;
+          padding: 0.75rem 1rem;
+          font-family: var(--font-sans);
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .cway-btn-submit:hover {
+          background-color: var(--accent-red);
+          color: var(--bg-dark);
+        }
+        .cway-footer-link { margin-top: 1.25rem; }
+        .cway-footer-link a {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          font-size: 0.8125rem;
+          color: var(--text-muted);
+          text-decoration: none;
+          transition: color 0.15s ease;
+        }
+        .cway-footer-link a:hover { color: var(--text-bright); }
+        .cway-footer-link .material-symbols-outlined { font-size: 1rem; }
